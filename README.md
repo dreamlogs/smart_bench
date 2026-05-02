@@ -14,7 +14,7 @@ The ESP32 hosts a local web server over WiFi. A single page dashboard displays o
 
 | Component | Role |
 |---|---|
-| ESP32 WROOM 32 | MCU, WiFi, 10x capacitive touch GPIO |
+| Arduino® Nano ESP32 with headers | Central MCU, WiFi Gateway & Touch Controller |
 | Copper tape electrodes | Occupancy zones (left, center, right) |
 | DHT22 | Temperature, humidity |
 | BH1750 | Ambient light (lux), I2C |
