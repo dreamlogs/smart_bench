@@ -64,14 +64,14 @@ docs/
 ## Build status
 
 - [x] Steel frame fabricated
-- [ ] Seat surface cut and mounted
-- [ ] Capacitive touch wiring and calibration
-- [ ] Environmental sensor integration
-- [ ] Solar charging circuit
-- [ ] OLED local display
-- [ ] WiFi web dashboard
-- [ ] Enclosure for electronics
-- [ ] Final documentation
+- [x] Seat surface cut and mounted
+- [x] Capacitive touch wiring and calibration
+- [x] Environmental sensor integration
+- [x] Solar charging circuit
+- [x] OLED local display
+- [x] WiFi web dashboard
+- [x] Enclosure for electronics
+- [x] Final documentation
 
 ## Author
 
