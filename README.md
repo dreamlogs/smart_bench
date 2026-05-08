@@ -1,78 +1,73 @@
 # Smart Bench
 
-Capacitive touch occupancy detection, environmental sensing, and solar powered telemetry on a welded steel bench frame. ESP32 firmware serves a real time data dashboard over WiFi.
+A sensor-equipped workbench with local environmental monitoring, occupancy detection, solar charging, and a WiFi dashboard. Built on a welded steel frame.
 
-## System
+## Status
 
-A 19 x 66 x 26 inch welded steel frame supports a wood seat surface with copper tape electrodes laminated to the underside. The electrodes connect to the ESP32's built in capacitive touch GPIOs, enabling per zone occupancy detection without mechanical switches or external ICs.
+**Parts ordered. Arriving May 8, 2026. Build not yet started.**
 
-Environmental data (temperature, humidity, ambient light) is sampled continuously via I2C. A 6V solar panel feeds a TP4056 charge controller into an 18650 lithium cell, making the system self sustaining outdoors.
-
-The ESP32 hosts a local web server over WiFi. A single page dashboard displays occupancy state, sensor readings, and battery status with auto refreshing fetch calls.
+---
 
 ## Hardware
 
-| Component | Role |
+| Component | Purpose |
 |---|---|
-| Arduino® Nano ESP32 with headers | Central MCU, WiFi Gateway & Touch Controller |
-| Copper tape electrodes | Occupancy zones (left, center, right) |
-| DHT22 | Temperature, humidity |
-| BH1750 | Ambient light (lux), I2C |
-| 6V 1W solar panel | Energy harvesting |
-| TP4056 | Li ion charge management |
-| 18650 3.7V cell | Power storage |
-| SSD1306 0.96" OLED | Local display, I2C |
+| ESP32 | Microcontroller, WiFi dashboard host |
+| DHT22 | Temperature and humidity sensor |
+| BH1750 | Ambient light sensor |
+| Copper tape (capacitive) | Occupancy detection |
+| OLED display | Local readout |
+| TP4056 module | Solar charge controller |
+| 18650 Li-ion cell | Battery |
+| Solar panel | Power input |
 
-## Firmware
+## Frame
 
-Written in Arduino C++ targeting the ESP32 Arduino core. Main loop samples all sensors at 1Hz, updates the OLED, and handles HTTP requests from connected clients. Touch thresholds are calibrated per electrode during setup.
+Welded steel. 19" x 66" x 26" (W x L x H).
 
-```
-firmware/
-  main.ino        Entry point, sensor polling, web server routes
-  config.h        Pin map, WiFi credentials, touch thresholds
-  sensors.h       DHT22 and BH1750 read wrappers
-  touch.h         Capacitive zone logic and debouncing
-```
+## Planned Features
 
-## Web dashboard
+- Capacitive touch occupancy detection via copper tape grid
+- Environmental logging (temp, humidity, lux)
+- Local OLED display showing live sensor readings
+- Solar charging with 18650 battery backup
+- ESP32 WiFi dashboard accessible on local network
 
-Served from SPIFFS (ESP32 onboard flash). Static HTML/CSS/JS. The page polls `/api/data` at 1s intervals and renders:
+## Planned Software Stack
 
-- Occupancy zones (binary per zone, with time since last change)
-- Temperature and humidity (current, min, max)
-- Light level (lux)
-- Battery voltage and charge state
+- **Firmware:** Arduino C++ via PlatformIO (VS Code)
+- **Dashboard:** ESP32 web server serving a lightweight HTML page
+- **Sensors:** DHT22 over single-wire, BH1750 over I2C
+- **Capacitive touch:** ESP32 built-in touch pins or standalone capacitive IC
 
-```
-web/
-  index.html
-  style.css
-  app.js
-```
-
-## Physical build
-
-The steel frame was MIG welded from rectangular tubing. Seat surface is dimensional lumber bolted to welded angle tabs on the frame. Copper electrodes are applied as continuous strips across each seating zone, routed through holes in the wood to the electronics cavity underneath. All wiring and the ESP32 are housed in a 3D printed or sheet metal enclosure bolted to the frame's underside.
+## Repo Structure (Planned)
 
 ```
-docs/
-  wiring.png
-  build-photos/
+smart_bench/
+├── firmware/
+│   ├── src/
+│   │   └── main.cpp
+│   └── platformio.ini
+├── docs/
+│   ├── wiring_diagram.pdf
+│   └── bom.md
+└── README.md
 ```
 
-## Build status
+## Build Log
 
-- [x] Steel frame fabricated
-- [x] Seat surface cut and mounted
-- [x] Capacitive touch wiring and calibration
-- [x] Environmental sensor integration
-- [x] Solar charging circuit
-- [x] OLED local display
-- [x] WiFi web dashboard
-- [x] Enclosure for electronics
-- [x] Final documentation
+| Date | Milestone |
+|---|---|
+| Early 2026 | Frame welded (19x66x26 steel) |
+| May 7, 2026 | Parts ordered |
+| May 8, 2026 | Parts arriving |
+| TBD | Wiring and sensor integration |
+| TBD | Firmware v1 (sensor reads + OLED) |
+| TBD | WiFi dashboard live |
+| TBD | Solar charging integrated |
 
-## Author
+## Notes
 
-Adam Perez
+- Frame dimensions finalized in Rhino with 0.01" decimal tolerance
+- Capacitive occupancy detection is primary bench interaction sensor
+- WiFi dashboard is local only, no cloud dependency
