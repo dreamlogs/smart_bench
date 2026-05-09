@@ -1,10 +1,10 @@
-# Smart Bench
+git add README.md && git commit -m "update: parts received May 8 2026" && git push# Smart Bench
 
 A sensor-equipped workbench with local environmental monitoring, occupancy detection, solar charging, and a WiFi dashboard. Built on a welded steel frame.
 
 ## Status
 
-**Parts ordered. Arriving May 8, 2026. Build not yet started.**
+**Parts ordered. Received May 8, 2026. Starting build.**
 
 ---
 
@@ -60,7 +60,7 @@ smart_bench/
 |---|---|
 | Early 2026 | Frame welded (19x66x26 steel) |
 | May 7, 2026 | Parts ordered |
-| May 8, 2026 | Parts arriving |
+| May 8, 2026 | Parts Received: Esp32 x3, DHT22, OLED x5, TTP223 x10, TP4056x3, 18650 holders x20, solar panels. 22AWG wire, heat shrink  |
 | TBD | Wiring and sensor integration |
 | TBD | Firmware v1 (sensor reads + OLED) |
 | TBD | WiFi dashboard live |
