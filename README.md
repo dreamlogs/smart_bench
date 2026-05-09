@@ -1,4 +1,3 @@
-git add README.md && git commit -m "update: parts received May 8 2026" && git push# Smart Bench
 
 A sensor-equipped workbench with local environmental monitoring, occupancy detection, solar charging, and a WiFi dashboard. Built on a welded steel frame.
 
