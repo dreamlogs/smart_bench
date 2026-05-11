@@ -6,84 +6,99 @@
 #include <Adafruit_SSD1306.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include "secrets.h"
 
-// ─── Pin Definitions ─────────────────────────────────────────────────────────
+// Pin Definitions
 #define DHT_PIN       4
 #define DHT_TYPE      DHT22
-#define TOUCH_PIN     T0    // Capacitive occupancy pad
+#define TOUCH_PIN     13    // TTP223B digital output
 
-// ─── Display ──────────────────────────────────────────────────────────────────
+// Display
 #define SCREEN_WIDTH  128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1
 
-// ─── WiFi Credentials ─────────────────────────────────────────────────────────
-// TODO: move to secrets.h before any public commits
-const char* WIFI_SSID     = "YOUR_SSID";
-const char* WIFI_PASSWORD = "YOUR_PASSWORD";
+// Timing
+#define READ_INTERVAL 2000  // ms between sensor reads
 
-// ─── Objects ──────────────────────────────────────────────────────────────────
+// Objects
 DHT dht(DHT_PIN, DHT_TYPE);
 BH1750 lightMeter;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WebServer server(80);
 
-// ─── State ────────────────────────────────────────────────────────────────────
-float temperature  = 0.0;
-float humidity     = 0.0;
-float lux          = 0.0;
-bool  occupied     = false;
+// State
+float temperature = 0.0;
+float humidity    = 0.0;
+float lux         = 0.0;
+bool  occupied    = false;
+unsigned long lastRead = 0;
 
-// ─── Sensor Read ──────────────────────────────────────────────────────────────
 void readSensors() {
-  temperature = dht.readTemperature();
-  humidity    = dht.readHumidity();
-  lux         = lightMeter.readLightLevel();
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
 
-  // Capacitive touch: ESP32 returns lower values when touched
-  int touchVal = touchRead(TOUCH_PIN);
-  occupied = (touchVal < 30);  // threshold TBD after physical calibration
+  if (!isnan(t)) temperature = t;
+  if (!isnan(h)) humidity    = h;
+
+  lux      = lightMeter.readLightLevel();
+  occupied = digitalRead(TOUCH_PIN) == HIGH;
 }
 
-// ─── OLED Display ─────────────────────────────────────────────────────────────
 void updateDisplay() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
 
-  display.print("Temp:  "); display.print(temperature); display.println(" C");
-  display.print("Humid: "); display.print(humidity);    display.println(" %");
-  display.print("Light: "); display.print(lux);         display.println(" lx");
+  display.print("Temp:  "); display.print(temperature, 1); display.println(" C");
+  display.print("Humid: "); display.print(humidity, 1);    display.println(" %");
+  display.print("Light: "); display.print(lux, 0);         display.println(" lx");
   display.print("Bench: "); display.println(occupied ? "OCCUPIED" : "EMPTY");
 
   display.display();
 }
 
-// ─── WiFi Dashboard ───────────────────────────────────────────────────────────
 void handleRoot() {
-  String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'>";
-  html += "<meta http-equiv='refresh' content='5'>";
-  html += "<title>Smart Bench</title></head><body>";
-  html += "<h2>Smart Bench</h2>";
-  html += "<p>Temperature: " + String(temperature) + " C</p>";
-  html += "<p>Humidity: "    + String(humidity)    + " %</p>";
-  html += "<p>Light: "       + String(lux)         + " lx</p>";
-  html += "<p>Bench: "       + String(occupied ? "OCCUPIED" : "EMPTY") + "</p>";
-  html += "</body></html>";
+  String html = "<!DOCTYPE html><html><head>"
+    "<meta charset='UTF-8'>"
+    "<meta http-equiv='refresh' content='5'>"
+    "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+    "<title>Smart Bench</title>"
+    "<style>"
+      "body{font-family:monospace;padding:2rem;background:#0a0a0a;color:#e0e0e0;}"
+      "h2{color:#7eb8f7;margin-bottom:1.5rem;}"
+      ".row{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid #222;}"
+      ".label{color:#888;}"
+      ".value{color:#fff;font-weight:bold;}"
+      ".occupied{color:#4caf50;} .empty{color:#f44336;}"
+    "</style></head><body>"
+    "<h2>smart bench</h2>"
+    "<div class='row'><span class='label'>temperature</span><span class='value'>" + String(temperature, 1) + " C</span></div>"
+    "<div class='row'><span class='label'>humidity</span><span class='value'>"    + String(humidity, 1)    + " %</span></div>"
+    "<div class='row'><span class='label'>light</span><span class='value'>"       + String(lux, 0)         + " lx</span></div>"
+    "<div class='row'><span class='label'>bench</span><span class='value "        + String(occupied ? "occupied'>OCCUPIED" : "empty'>EMPTY") + "</span></div>"
+    "</body></html>";
   server.send(200, "text/html", html);
 }
 
-// ─── Setup ────────────────────────────────────────────────────────────────────
+void handleData() {
+  String json = "{";
+  json += "\"temperature\":" + String(temperature, 2) + ",";
+  json += "\"humidity\":"    + String(humidity, 2)    + ",";
+  json += "\"lux\":"         + String(lux, 2)         + ",";
+  json += "\"occupied\":"    + String(occupied ? "true" : "false");
+  json += "}";
+  server.send(200, "application/json", json);
+}
+
 void setup() {
   Serial.begin(115200);
-
-  // Init sensors
+  pinMode(TOUCH_PIN, INPUT);
   dht.begin();
   Wire.begin();
   lightMeter.begin();
 
-  // Init display
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("SSD1306 not found");
     while (true);
@@ -91,7 +106,6 @@ void setup() {
   display.clearDisplay();
   display.display();
 
-  // Connect WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -100,15 +114,17 @@ void setup() {
   }
   Serial.println("\nConnected. IP: " + WiFi.localIP().toString());
 
-  // Start web server
-  server.on("/", handleRoot);
+  server.on("/",     handleRoot);
+  server.on("/data", handleData);
   server.begin();
 }
 
-// ─── Loop ─────────────────────────────────────────────────────────────────────
 void loop() {
-  readSensors();
-  updateDisplay();
+  unsigned long now = millis();
+  if (now - lastRead >= READ_INTERVAL) {
+    lastRead = now;
+    readSensors();
+    updateDisplay();
+  }
   server.handleClient();
-  delay(2000);
 }
