@@ -1,0 +1,1 @@
+// SmartBenchRipple.jsx - placeholder
